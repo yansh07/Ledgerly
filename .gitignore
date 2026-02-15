@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 # added by me
+venv
+.venv
+/venv
+./venv
