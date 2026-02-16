@@ -1,31 +1,25 @@
 import { LuReceiptIndianRupee } from "react-icons/lu";
+import { FaGoogle } from "react-icons/fa";
 
 function Navbar() {
   return (
     <div className="pt-6">
-      {/* navbar  */}
-      <div className="px-3 md:px-6">
-        <nav className="flex justify-between text-gray-100">
+      <div className="px-6 md:px-12">
+        <nav className="flex justify-between items-center text-gray-100">
           <div>
-            <a href="/" className="flex gap-3">
-              <span>
-                <LuReceiptIndianRupee className="text-3xl md:text-4xl" />
+            <a href="/" className="flex gap-2 items-center group">
+              <span className="text-3xl md:text-4xl text-amber-400 group-hover:text-amber-300 transition-colors">
+                <LuReceiptIndianRupee />
               </span>
-              <span className="text-2xl md:text-3xl font-bold">Ledgerly</span>
+              <span className="text-2xl md:text-3xl font-black tracking-tight">Ledgerly</span>
             </a>
           </div>
-          <div className="flex items-center space-x-12 text-lg md:text-xl font-semibold">
-            <span className="hidden md:inline-block border border-transparent px-2 py-1 rounded-md hover:bg-gray-700">
-              <a href="/Login">Login</a>
-            </span>
-
-            <span className="border px-2 py-1 rounded-md bg-gradient-to-r from-slate-700 to-gray-900 border-transparent hover:ring-1 hover:transition-all hover:duration-300">
-              <a href="/signup">Get Started</a>
-            </span>
-          </div>
+          <button className="hidden md:block px-2 md:px-8 py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm md:text-base hover:shadow-lg hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105">
+            <a href="/auth/google" className="no-underline flex items-center gap-2 md:text-xl text-lg">Continue with <span><FaGoogle className="text-lg"/></span></a>
+          </button>
         </nav>
       </div>
-      <div className="border-[0.5px] border-gray-500 mt-4" />
+      <div className="border-b border-gray-800 mt-6" />
     </div>
   );
 }
