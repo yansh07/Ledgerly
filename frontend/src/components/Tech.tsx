@@ -1,6 +1,4 @@
-import { SiTypescript, SiPostgresql } from "react-icons/si";
-import { TbServer } from "react-icons/tb";
-import { RiShieldFill } from "react-icons/ri";
+import { SiTypescript, SiPostgresql, SiFastapi, SiJsonwebtokens } from "react-icons/si";
 import { MdMailOutline } from "react-icons/md";
 
 const technologies = [
@@ -11,7 +9,7 @@ const technologies = [
     color: "from-blue-400 to-blue-600",
   },
   {
-    icon: TbServer,
+    icon: SiFastapi,
     name: "FastAPI",
     role: "Backend",
     color: "from-green-400 to-emerald-600",
@@ -23,7 +21,7 @@ const technologies = [
     color: "from-cyan-400 to-blue-600",
   },
   {
-    icon: RiShieldFill,
+    icon: SiJsonwebtokens,
     name: "JWT Auth",
     role: "Security",
     color: "from-amber-400 to-orange-600",
