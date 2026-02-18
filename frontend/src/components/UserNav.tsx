@@ -73,42 +73,75 @@ function UserNav() {
           </div>
           <div className="mx-8 md:mx-0">
             <div className="flex gap-2 sm:gap-3 md:gap-5">
-              <button className="border p-3 sm:p-2.5 md:p-3 rounded-lg bg-indigo-700 cursor-pointer transition-all duration-300 border-transparent hover:border-indigo-300">
+              <button className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
+             bg-slate-700 cursor-pointer border-transparent 
+             transition-all duration-300 hover:border-indigo-300 group">
                 <a href="/profile">
                   <FaUserAstronaut className="text-xl sm:text-2xl" />
                 </a>
+                <span
+                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
+             opacity-0 translate-y-2
+             group-hover:opacity-100 group-hover:translate-y-0
+             bg-slate-700 text-white text-sm
+             px-3 py-1 rounded whitespace-nowrap
+             transition-all duration-200 pointer-events-none"
+                >
+                  Profile
+                </span>
               </button>
               <button
                 onClick={() => setShowAddSpendForm(true)}
-                className="text-lg sm:text-xl border p-3 sm:p-2.5 md:p-3 rounded-lg bg-indigo-700 cursor-pointer border-transparent transition-all duration-300 hover:border-indigo-300"
+                className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
+             bg-slate-700 cursor-pointer border-transparent 
+             transition-all duration-300 hover:border-indigo-300 group"
               >
                 <GrAdd />
+                <span
+                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
+             opacity-0 translate-y-2
+             group-hover:opacity-100 group-hover:translate-y-0
+             bg-slate-700 text-white text-sm
+             px-3 py-1 rounded whitespace-nowrap
+             transition-all duration-200 pointer-events-none"
+                >
+                  Add spend
+                </span>
               </button>
               <button
                 onClick={() => setShowDownloadModal(true)}
                 className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
-             bg-indigo-700 cursor-pointer border-transparent 
+             bg-slate-700 cursor-pointer border-transparent 
              transition-all duration-300 hover:border-indigo-300 group"
               >
                 <LiaCloudDownloadAltSolid />
 
                 <span
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
              opacity-0 translate-y-2
              group-hover:opacity-100 group-hover:translate-y-0
-             bg-indigo-900 text-white text-sm
+             bg-slate-700 text-white text-sm
              px-3 py-1 rounded whitespace-nowrap
              transition-all duration-200 pointer-events-none"
                 >
-                  Download Your Report
+                  Download Report
                 </span>
               </button>
               <div className="hidden md:block">
-                <button className="flex items-center gap-3 border rounded-lg px-2 py-2 bg-red-700 border-transparent text-white cursor-pointer transition-all duration-300 hover:border-indigo-300">
-                  <span className="text-lg font-medium">Logout</span>
-                  <span>
-                    <TbLogout className="text-xl" />
-                  </span>
+                <button className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
+             bg-slate-700 cursor-pointer border-transparent 
+             transition-all duration-300 hover:border-indigo-300 group">
+                    <TbLogout />
+                    <span
+                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
+             opacity-0 translate-y-2
+             group-hover:opacity-100 group-hover:translate-y-0
+             bg-slate-700 text-white text-sm
+             px-3 py-1 rounded whitespace-nowrap
+             transition-all duration-200 pointer-events-none"
+                >
+                  Logout
+                </span>
                 </button>
               </div>
             </div>
