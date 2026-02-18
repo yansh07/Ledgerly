@@ -11,14 +11,16 @@ const getGreeting = (): string => {
   }
 };
 
-
 function DashboardHero() {
   return (
     <div className=" px-6 md:px-10 pt-4">
-      <div className="md:text-4xl text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white via-gray-300 to-gray-500">
-        <span>{getGreeting()}, </span>
-        <span>Priyanshu</span>
+      <div>
+        <div className="md:text-5xl text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-b from-white via-gray-300 to-gray-500">
+          <span>{getGreeting()}, </span>
+          <span>Priyanshu</span>
+        </div>
       </div>
+      <p className="text-gray-300 pt-4 font-light">Here's a quick look at your finances.</p>
     </div>
   );
 }
