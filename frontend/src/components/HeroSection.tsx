@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { FaGoogle } from "react-icons/fa";
 
 declare global {
@@ -10,17 +10,16 @@ declare global {
 function HeroSection() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
-  const googleReady = useRef(false);
 
   useEffect(() => {
-    const initGoogle = () => {
-      if (!window.google || !GOOGLE_CLIENT_ID) return;
+    if (!window.google || !GOOGLE_CLIENT_ID) return;
 
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (resp: { credential?: string }) => {
-          if (!resp?.credential) return;
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: async (resp: { credential?: string }) => {
+        if (!resp?.credential) return;
 
+        try {
           const r = await fetch(`${API_BASE_URL}/auth/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -28,7 +27,7 @@ function HeroSection() {
           });
 
           if (!r.ok) {
-            console.error("Google auth failed");
+            console.error("Google auth failed:", await r.text());
             return;
           }
 
@@ -36,27 +35,15 @@ function HeroSection() {
           localStorage.setItem("access_token", data.access_token);
           localStorage.setItem("user", JSON.stringify(data.user));
           window.location.href = "/dashboard";
-        },
-      });
-
-      googleReady.current = true;
-    };
-
-    if (window.google) {
-      initGoogle();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = initGoogle;
-    document.body.appendChild(script);
+        } catch (err) {
+          console.error("Auth error:", err);
+        }
+      },
+    });
   }, [API_BASE_URL, GOOGLE_CLIENT_ID]);
 
   const handleGoogleLogin = () => {
-    if (!googleReady.current || !window.google) return;
+    if (!window.google) return;
     window.google.accounts.id.prompt();
   };
 
