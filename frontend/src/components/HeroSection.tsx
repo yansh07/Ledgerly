@@ -12,39 +12,63 @@ function HeroSection() {
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
   useEffect(() => {
-    if (!window.google || !GOOGLE_CLIENT_ID) return;
+    const initializeGsi = () => {
+      if (!window.google || !GOOGLE_CLIENT_ID) {
+        console.error("Google library not loaded or client ID missing.");
+        return;
+      }
 
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (resp: { credential?: string }) => {
-        if (!resp?.credential) return;
-
-        try {
-          const r = await fetch(`${API_BASE_URL}/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: resp.credential }),
-          });
-
-          if (!r.ok) {
-            console.error("Google auth failed:", await r.text());
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (resp: { credential?: string }) => {
+          if (!resp.credential) {
+            console.error("Google Sign-In failed: No credential returned.");
             return;
           }
 
-          const data = await r.json();
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          window.location.href = "/dashboard";
-        } catch (err) {
-          console.error("Auth error:", err);
-        }
-      },
-    });
+          try {
+            const r = await fetch(`${API_BASE_URL}/auth/google`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token: resp.credential }),
+            });
+
+            if (!r.ok) {
+              console.error("Backend auth failed:", await r.text());
+              return;
+            }
+
+            const data = await r.json();
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            window.location.href = "/dashboard";
+          } catch (err) {
+            console.error("Auth request error:", err);
+          }
+        },
+      });
+    };
+
+    // Load the Google GSI script
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGsi;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on component unmount
+      document.body.removeChild(script);
+    };
   }, [API_BASE_URL, GOOGLE_CLIENT_ID]);
 
   const handleGoogleLogin = () => {
-    if (!window.google) return;
-    window.google.accounts.id.prompt();
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      console.error("Google Sign-In is not initialized yet.");
+    }
   };
 
   return (
