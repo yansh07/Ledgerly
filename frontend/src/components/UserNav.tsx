@@ -5,8 +5,11 @@ import { GrAdd } from "react-icons/gr";
 import { LiaCloudDownloadAltSolid } from "react-icons/lia";
 import { MdClose } from "react-icons/md";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setUserAuthenticated } from "../utils/auth";
 
 function UserNav() {
+  const navigate = useNavigate();
   const [showAddSpendForm, setShowAddSpendForm] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -57,6 +60,12 @@ function UserNav() {
     setFormData({ category: "", date: "", amount: "" });
     setShowAddSpendForm(false);
   };
+
+  const handleLogout = () => {
+    setUserAuthenticated(false);
+    navigate("/");
+  };
+
   return (
     <div className="pt-6 overflow-x-clip">
       <div className="px-5 sm:px-4 md:px-10">
@@ -130,7 +139,9 @@ function UserNav() {
               <div className="hidden md:block">
                 <button className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
              bg-slate-700 cursor-pointer border-transparent 
-             transition-all duration-300 hover:border-indigo-300 group">
+             transition-all duration-300 hover:border-indigo-300 group"
+                  onClick={handleLogout}
+                >
                     <TbLogout />
                     <span
                   className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2

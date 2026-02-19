@@ -1,16 +1,38 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import { isUserAuthenticated } from "./utils/auth";
+
+function PublicRoute() {
+  if (isUserAuthenticated()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function ProtectedRoute() {
+  if (!isUserAuthenticated()) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing />}/>
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/profile" element={<Profile />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<Landing />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

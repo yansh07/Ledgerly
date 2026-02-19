@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { setUserAuthenticated } from "../utils/auth";
 
 const profile = {
   name: "Priyanshu",
@@ -13,9 +14,16 @@ const profile = {
 
 function Profile() {
   const navigate = useNavigate();
+
   const handleClick = () => {
     navigate("/dashboard");
-  }
+  };
+
+  const handleLogout = () => {
+    setUserAuthenticated(false);
+    navigate("/");
+  };
+
   return (
     <div className="max-w-4xl mx-auto w-full px-6 md:px-10 py-10">
       <div className="rounded-2xl border border-gray-800 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 md:p-8">
@@ -102,6 +110,7 @@ function Profile() {
             Home
           </button>
           <button
+            onClick={handleLogout}
             type="button"
             className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-200 hover:border-gray-500 cursor-pointer"
           >
