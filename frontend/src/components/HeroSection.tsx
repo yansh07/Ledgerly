@@ -1,6 +1,65 @@
+import { useEffect, useRef } from "react";
 import { FaGoogle } from "react-icons/fa";
 
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 function HeroSection() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
+  const googleReady = useRef(false);
+
+  useEffect(() => {
+    const initGoogle = () => {
+      if (!window.google || !GOOGLE_CLIENT_ID) return;
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (resp: { credential?: string }) => {
+          if (!resp?.credential) return;
+
+          const r = await fetch(`${API_BASE_URL}/auth/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: resp.credential }),
+          });
+
+          if (!r.ok) {
+            console.error("Google auth failed");
+            return;
+          }
+
+          const data = await r.json();
+          localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          window.location.href = "/dashboard";
+        },
+      });
+
+      googleReady.current = true;
+    };
+
+    if (window.google) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.body.appendChild(script);
+  }, [API_BASE_URL, GOOGLE_CLIENT_ID]);
+
+  const handleGoogleLogin = () => {
+    if (!googleReady.current || !window.google) return;
+    window.google.accounts.id.prompt();
+  };
+
   return (
     <div>
       <div className="md:pt-32 pt-20 text-center">
@@ -17,10 +76,14 @@ function HeroSection() {
         </p>
 
         <div className="mt-12">
-          <button className="px-8 md:px-12 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-lg md:text-2xl hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 active:scale-95">
-            <a href="/auth/google" className="no-underline flex items-center justify-center gap-3">
-              Continue with <span><FaGoogle className="text-2xl"/></span>
-            </a>
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="px-8 md:px-12 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-lg md:text-2xl hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            <span className="no-underline flex items-center justify-center gap-3">
+              Continue with <FaGoogle className="text-2xl" />
+            </span>
           </button>
         </div>
         
