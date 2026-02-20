@@ -1,28 +1,39 @@
 import { useNavigate } from "react-router-dom";
-import { setUserAuthenticated } from "../utils/auth";
-
-const profile = {
-  name: "Priyanshu",
-  email: "priyanshu@gmail.com",
-  memberSince: "Jun 2024",
-  lastLogin: "Feb 18, 2026",
-  plan: "Starter",
-  status: "Active",
-  location: "Delhi, IN",
-  avatarUrl: "https://lh3.googleusercontent.com/a/default-user=s96-c",
-};
+import { removeUserData, getUserData } from "../utils/auth";
+import { useEffect, useState } from "react";
 
 function Profile() {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const userData = getUserData();
+    if (userData) {
+      setProfile({
+        name: userData.name,
+        email: userData.email,
+        avatarUrl: userData.profile_pic,
+        memberSince: "Jun 2024",
+        lastLogin: "Feb 18, 2026",
+        plan: "Starter",
+        status: "Active",
+        location: "Delhi, IN",
+      });
+    }
+  }, []);
 
   const handleClick = () => {
     navigate("/dashboard");
   };
 
   const handleLogout = () => {
-    setUserAuthenticated(false);
+    removeUserData();
     navigate("/");
   };
+
+  if (!profile) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto w-full px-6 md:px-10 py-10">

@@ -2,9 +2,26 @@ const AUTH_STORAGE_KEY = import.meta.env.VITE_AUTH_STORAGE_KEY;
 
 export function isUserAuthenticated(): boolean {
   const token = localStorage.getItem("access_token");
-  // Check if the token exists and is not an empty string
   return !!token;
 }
+
+export const getAccessToken = (): string | null => {
+  return localStorage.getItem("access_token");
+};
+
+export const setUserData = (user: any) => {
+  localStorage.setItem("user", JSON.stringify(user));
+};
+
+export const getUserData = () => {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+};
+
+export const removeUserData = () => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("access_token");
+};
 
 export const setUserAuthenticated = (isAuthenticated: boolean): void => {
   if (isAuthenticated) {

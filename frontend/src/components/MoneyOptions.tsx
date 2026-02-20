@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IndianRupee, Trash2, Calendar, LayoutDashboard, CreditCard, TrendingUp } from 'lucide-react';
+import { getAccessToken } from '../utils/auth';
 
-// Mock data
 const INITIAL_CHART_DATA = [
     { label: "Mon", value: 45 },
     { label: "Tue", value: 60 },
@@ -12,23 +12,62 @@ const INITIAL_CHART_DATA = [
     { label: "Sun", value: 40 },
 ];
 
-const INITIAL_SPEND_ROWS = [
-    { id: 1, category: "Groceries", date: "2026-02-12", amount: "2,150" },
-    { id: 2, category: "Transport", date: "2026-02-13", amount: "540" },
-    { id: 3, category: "Subscriptions", date: "2026-02-14", amount: "799" },
-    { id: 4, category: "Dining", date: "2026-02-16", amount: "1,280" },
-];
+interface Spend {
+    id: number;
+    category: string;
+    date: string;
+    amount: number;
+}
 
 export default function App() {
-    const [spends, setSpends] = useState(INITIAL_SPEND_ROWS);
+    const [spends, setSpends] = useState<Spend[]>([]);
+
+    useEffect(() => {
+        const fetchExpenses = async () => {
+            const token = getAccessToken();
+            if (!token) return;
+
+            try {
+                const response = await fetch('http://localhost:8000/expense', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setSpends(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch expenses", error);
+            }
+        };
+
+        fetchExpenses();
+    }, []);
 
     // Calculate dynamic totals based on state
-    const totalSpent = spends.reduce((acc, curr) => acc + parseInt(curr.amount.replace(/,/g, '')), 0);
+    const totalSpent = spends.reduce((acc, curr) => acc + curr.amount, 0);
     const budgetLimit = 20000;
     const remainingBalance = budgetLimit - totalSpent;
 
-    const handleDeleteSpend = (rowId: number) => {
-        setSpends(prev => prev.filter(row => row.id !== rowId));
+    const handleDeleteSpend = async (rowId: number) => {
+        const token = getAccessToken();
+        if (!token) return;
+
+        try {
+            const response = await fetch(`http://localhost:8000/expense/${rowId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                setSpends(prev => prev.filter(row => row.id !== rowId));
+            }
+        } catch (error) {
+            console.error("Failed to delete expense", error);
+        }
     };
 
     return (
@@ -152,7 +191,7 @@ export default function App() {
                                             <td className="py-4 px-6 text-right">
                                                 <div className="inline-flex items-center gap-0.5 font-semibold text-white">
                                                     <IndianRupee size={12} className="text-gray-400" />
-                                                    {row.amount}
+                                                    {row.amount.toLocaleString('en-IN')}
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6 text-center">
