@@ -8,7 +8,16 @@ from app.db import Base
 from app.models import User, Expense
 import os
 
-db_url = os.getenv("DATABSE_URL")
+db_url = os.getenv("DATABASE_URL")
+
+config = context.config
+
+if db_url:
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    config.set_main_option("sqlalchemy.url", db_url)
+
+target_metadata = Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
