@@ -28,7 +28,7 @@ export default function App() {
             if (!token) return;
 
             try {
-                const response = await fetch('http://localhost:8000/expense', {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/expense`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -55,7 +55,7 @@ export default function App() {
         if (!token) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/expense/${rowId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/expense/${rowId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
