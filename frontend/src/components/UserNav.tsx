@@ -1,22 +1,40 @@
-import { LuReceiptIndianRupee } from "react-icons/lu";
-import { FaUserAstronaut } from "react-icons/fa6";
-import { TbLogout } from "react-icons/tb";
-import { GrAdd } from "react-icons/gr";
-import { LiaCloudDownloadAltSolid } from "react-icons/lia";
-import { MdClose } from "react-icons/md";
+import { 
+  IndianRupee, 
+  User as UserIcon, 
+  LogOut, 
+  Plus, 
+  CloudDownload, 
+  X 
+} from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setUserAuthenticated } from "../utils/auth";
+
+// Auth utility mockups
+const getAccessToken = () => localStorage.getItem("access_token");
+const setUserAuthenticated = (val: string) => localStorage.setItem("auth", val);
+
+// Safe environment variable access for non-Vite or older targets
+const getApiBaseUrl = () => {
+  try {
+    return import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  } catch (e) {
+    return "http://localhost:8000";
+  }
+};
 
 function UserNav() {
   const navigate = useNavigate();
   const [showAddSpendForm, setShowAddSpendForm] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     category: "",
-    date: "",
+    date: new Date().toISOString().split('T')[0],
     amount: "",
   });
+
+  const API_BASE_URL = getApiBaseUrl();
 
   const humoriousSlogans = [
     "💸 Where did my money go?",
@@ -31,38 +49,76 @@ function UserNav() {
     [...humoriousSlogans].sort(() => Math.random() - 0.5).slice(0, 2),
   );
 
-  const handleDownloadCSV = () => {
-    // API call will be handled here
-    console.log("Download CSV");
+  // Dashboard refresh trigger karne ke liye helper
+  const triggerRefresh = () => {
+    window.dispatchEvent(new Event("expenseAdded"));
+  };
+
+  const handleDownload = async (format: string) => {
+    const token = getAccessToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/report/download?format=${format}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ledgerly_report_${new Date().getTime()}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error(`Failed to download ${format}`, error);
+    }
     setShowDownloadModal(false);
   };
 
-  const handleDownloadPDF = () => {
-    // API call will be handled here
-    console.log("Download PDF");
-    setShowDownloadModal(false);
-  };
-
-  const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmitSpend = (e: React.FormEvent) => {
+  const handleSubmitSpend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // API call will be handled here
-    console.log("Submit spend:", formData);
-    setFormData({ category: "", date: "", amount: "" });
-    setShowAddSpendForm(false);
+    const token = getAccessToken();
+    if (!token) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/expenses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          amount: parseFloat(formData.amount)
+        }),
+      });
+
+      if (response.ok) {
+        setFormData({ category: "", date: new Date().toISOString().split('T')[0], amount: "" });
+        setShowAddSpendForm(false);
+        triggerRefresh();
+      }
+    } catch (error) {
+      console.error("Failed to add spend", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
-    setUserAuthenticated(false);
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    setUserAuthenticated("false");
     navigate("/");
   };
 
@@ -73,7 +129,7 @@ function UserNav() {
           <div>
             <a href="/" className="flex gap-1.5 sm:gap-2 items-center group">
               <span className="text-4xl sm:text-3xl md:text-4xl text-amber-400 group-hover:text-amber-300 transition-colors">
-                <LuReceiptIndianRupee />
+                <IndianRupee />
               </span>
               <span className="text-2xl sm:text-2xl md:text-3xl font-black tracking-tight">
                 Ledgerly
@@ -82,160 +138,46 @@ function UserNav() {
           </div>
           <div className="mx-8 md:mx-0">
             <div className="flex gap-2 sm:gap-3 md:gap-5">
-              <button className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
-             bg-slate-700 cursor-pointer border-transparent 
-             transition-all duration-300 hover:border-indigo-300 group">
-                <a href="/profile">
-                  <FaUserAstronaut className="text-xl sm:text-2xl" />
-                </a>
-                <span
-                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
-             opacity-0 translate-y-2
-             group-hover:opacity-100 group-hover:translate-y-0
-             bg-slate-700 text-white text-sm
-             px-3 py-1 rounded whitespace-nowrap
-             transition-all duration-200 pointer-events-none"
-                >
-                  Profile
-                </span>
-              </button>
-              <button
-                onClick={() => setShowAddSpendForm(true)}
-                className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
-             bg-slate-700 cursor-pointer border-transparent 
-             transition-all duration-300 hover:border-indigo-300 group"
-              >
-                <GrAdd />
-                <span
-                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
-             opacity-0 translate-y-2
-             group-hover:opacity-100 group-hover:translate-y-0
-             bg-slate-700 text-white text-sm
-             px-3 py-1 rounded whitespace-nowrap
-             transition-all duration-200 pointer-events-none"
-                >
-                  Add spend
-                </span>
-              </button>
-              <button
-                onClick={() => setShowDownloadModal(true)}
-                className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
-             bg-slate-700 cursor-pointer border-transparent 
-             transition-all duration-300 hover:border-indigo-300 group"
-              >
-                <LiaCloudDownloadAltSolid />
-
-                <span
-                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
-             opacity-0 translate-y-2
-             group-hover:opacity-100 group-hover:translate-y-0
-             bg-slate-700 text-white text-sm
-             px-3 py-1 rounded whitespace-nowrap
-             transition-all duration-200 pointer-events-none"
-                >
-                  Download Report
-                </span>
-              </button>
+              <NavButton icon={<UserIcon />} label="Profile" onClick={() => navigate("/profile")} />
+              <NavButton icon={<Plus />} label="Add spend" onClick={() => setShowAddSpendForm(true)} />
+              <NavButton icon={<CloudDownload />} label="Download Report" onClick={() => setShowDownloadModal(true)} />
               <div className="hidden md:block">
-                <button className="relative text-xl sm:text-2xl border p-3 sm:p-2.5 md:p-3 rounded-lg 
-             bg-slate-700 cursor-pointer border-transparent 
-             transition-all duration-300 hover:border-indigo-300 group"
-                  onClick={handleLogout}
-                >
-                    <TbLogout />
-                    <span
-                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2
-             opacity-0 translate-y-2
-             group-hover:opacity-100 group-hover:translate-y-0
-             bg-slate-700 text-white text-sm
-             px-3 py-1 rounded whitespace-nowrap
-             transition-all duration-200 pointer-events-none"
-                >
-                  Logout
-                </span>
-                </button>
+                <NavButton icon={<LogOut />} label="Logout" onClick={handleLogout} />
               </div>
             </div>
           </div>
         </nav>
       </div>
-      {/* border  */}
       <div className="border-b border-gray-800 mt-6" />
 
       {/* Download Modal */}
       {showDownloadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-gray-800 rounded-lg p-4 sm:p-6 w-full sm:w-96 max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-amber-500">
-                Choose Format
-              </h3>
-              <button
-                onClick={() => setShowDownloadModal(false)}
-                className="text-gray-400 hover:text-gray-200 transition"
-              >
-                <MdClose className="text-xl sm:text-2xl" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <button
-                onClick={handleDownloadCSV}
-                className="w-full px-4 py-2 sm:py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition duration-300"
-              >
+        <Modal title="Choose Format" onClose={() => setShowDownloadModal(false)}>
+            <div className="flex flex-col gap-4">
+              <button onClick={() => handleDownload('csv')} className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition duration-300">
                 📊 Download as CSV
               </button>
-              <button
-                onClick={handleDownloadPDF}
-                className="w-full px-4 py-2 sm:py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition duration-300"
-              >
+              <button onClick={() => handleDownload('pdf')} className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition duration-300">
                 📄 Download as PDF
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Add Spend Form Modal */}
       {showAddSpendForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-gray-800 rounded-lg p-4 sm:p-6 w-full sm:w-96 max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-amber-500">
-                Track Your Spend
-              </h3>
-              <button
-                onClick={() => setShowAddSpendForm(false)}
-                className="text-gray-400 hover:text-gray-200 transition"
-              >
-                <MdClose className="text-xl sm:text-2xl" />
-              </button>
-            </div>
-
-            {/* Humorous Slogans */}
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-800 rounded-md border border-gray-700">
+        <Modal title="Track Your Spend" onClose={() => setShowAddSpendForm(false)}>
+            <div className="mb-6 p-4 bg-slate-800/50 rounded-xl border border-gray-700">
               {randomSlogans.map((slogan, idx) => (
-                <p
-                  key={idx}
-                  className="text-xs sm:text-sm text-gray-400 italic mb-2 last:mb-0"
-                >
-                  {slogan}
-                </p>
+                <p key={idx} className="text-xs text-gray-400 italic mb-2 last:mb-0">{slogan}</p>
               ))}
             </div>
 
             <form onSubmit={handleSubmitSpend} className="flex flex-col gap-4">
-              {/* Category Select */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Category
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleFormChange}
-                  required
-                  className="w-full px-3 py-2 sm:py-2 bg-slate-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Category</label>
+                <select name="category" value={formData.category} onChange={handleFormChange} required
+                  className="w-full p-3 bg-slate-800 border border-gray-700 rounded-xl text-gray-200 focus:border-amber-500 outline-none"
                 >
                   <option value="">Select a category</option>
                   <option value="food">🍕 Food & Dining</option>
@@ -248,52 +190,52 @@ function UserNav() {
                 </select>
               </div>
 
-              {/* Date Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleFormChange}
-                  required
-                  className="w-full px-3 py-2 sm:py-2 bg-slate-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Date</label>
+                  <input type="date" name="date" value={formData.date} onChange={handleFormChange} required
+                    className="w-full p-3 bg-slate-800 border border-gray-700 rounded-xl text-gray-200 focus:border-amber-500 outline-none invert" />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Amount</label>
+                  <input type="number" name="amount" placeholder="0.00" value={formData.amount} onChange={handleFormChange} required step="0.01" min="0"
+                    className="w-full p-3 bg-slate-800 border border-gray-700 rounded-xl text-gray-200 focus:border-amber-500 outline-none" />
+                </div>
               </div>
 
-              {/* Amount Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Amount
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  placeholder="0.00"
-                  value={formData.amount}
-                  onChange={handleFormChange}
-                  required
-                  step="0.01"
-                  min="0"
-                  className="w-full px-3 py-2 sm:py-2 bg-slate-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full px-4 py-2 sm:py-3 mt-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition duration-300"
-              >
-                Add Spend 💸
+              <button disabled={loading} type="submit" className="w-full py-4 mt-2 bg-amber-600 hover:bg-amber-700 text-white font-black uppercase tracking-widest rounded-xl transition duration-300">
+                {loading ? "Adding..." : "Add Spend 💸"}
               </button>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
+}
+
+function NavButton({ icon, label, onClick }) {
+    return (
+        <button onClick={onClick} className="relative text-2xl border p-3 rounded-xl bg-slate-800/50 cursor-pointer border-gray-800 transition-all duration-300 hover:border-amber-400 group">
+            {icon}
+            <span className="absolute -bottom-12 left-1/2 -translate-x-1/2 mb-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 bg-slate-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg whitespace-nowrap transition-all duration-200 pointer-events-none z-50">
+                {label}
+            </span>
+        </button>
+    );
+}
+
+function Modal({ title, children, onClose }) {
+    return (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+            <div className="bg-slate-900 border border-gray-800 rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-black italic tracking-tighter uppercase text-amber-500">{title}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white bg-slate-800 p-2 rounded-full transition"><X size={20}/></button>
+                </div>
+                {children}
+            </div>
+        </div>
+    );
 }
 
 export default UserNav;
