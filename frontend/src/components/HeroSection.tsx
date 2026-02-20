@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { FaGoogle } from "react-icons/fa";
 
 declare global {
   interface Window {
@@ -47,6 +46,17 @@ function HeroSection() {
           }
         },
       });
+
+      const buttonDiv = document.getElementById("google-signin-button");
+
+      if (buttonDiv) {
+        window.google.accounts.id.renderButton(buttonDiv, {
+          theme: "outline",
+          size: "large",
+          type: "standard",
+          text: "continue_with",
+        });
+      }
     };
 
     // Load the Google GSI script
@@ -63,14 +73,6 @@ function HeroSection() {
     };
   }, [API_BASE_URL, GOOGLE_CLIENT_ID]);
 
-  const handleGoogleLogin = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
-    } else {
-      console.error("Google Sign-In is not initialized yet.");
-    }
-  };
-
   return (
     <div>
       <div className="md:pt-32 pt-20 text-center">
@@ -86,16 +88,8 @@ function HeroSection() {
           Because your bank app would rather you not know where it all went. We're the sober accountant in the room—minus the judgment, plus the analytics.
         </p>
 
-        <div className="mt-12">
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="px-8 md:px-12 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-lg md:text-2xl hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 active:scale-95"
-          >
-            <span className="no-underline flex items-center justify-center gap-3">
-              Continue with <FaGoogle className="text-2xl" />
-            </span>
-          </button>
+        <div className="mt-12 flex justify-center">
+          <div id="google-signin-button"></div>
         </div>
         
         <div className="mt-16 grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto px-4">
