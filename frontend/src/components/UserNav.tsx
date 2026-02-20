@@ -213,7 +213,7 @@ function UserNav() {
   );
 }
 
-function NavButton({ icon, label, onClick }) {
+function NavButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
     return (
         <button onClick={onClick} className="relative text-2xl border p-3 rounded-xl bg-slate-800/50 cursor-pointer border-gray-800 transition-all duration-300 hover:border-amber-400 group">
             {icon}
@@ -224,7 +224,7 @@ function NavButton({ icon, label, onClick }) {
     );
 }
 
-function Modal({ title, children, onClose }) {
+function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
     return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
             <div className="bg-slate-900 border border-gray-800 rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
