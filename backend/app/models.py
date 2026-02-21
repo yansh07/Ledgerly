@@ -13,8 +13,7 @@ class User(Base):
     profile_pic = Column(Text, nullable=True)
     monthly_budget = Column(Numeric(10, 2), nullable=False, server_default=text("0.00"))
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    last_download_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-
+    
     expenses = relationship("Expense", back_populates="user", cascade="all, delete-orphan")
 
 
