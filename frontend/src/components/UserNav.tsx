@@ -108,7 +108,7 @@ function UserNav() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/expenses`, {
+      const response = await fetch(`${API_BASE_URL}/expense`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,8 +159,7 @@ function UserNav() {
           </div>
           <div className="mx-8 md:mx-0">
             <div className="flex gap-2 sm:gap-3 md:gap-5">
-              {/* <NavButton icon={profile.avatarUrl} label="Profile avatar" onClick={() => navigate("/profile")} /> */}
-              <img src={profile.avatarUrl} alt="Profile Avatar" className="object-cover rounded-full h-12 w-12" onClick={() => navigate("/profile")}/>
+              <img src={profile.avatarUrl} alt="Profile Avatar" className="object-cover rounded-full h-12 w-12 cursor-pointer" onClick={() => navigate("/profile")}/>
               <NavButton icon={<Plus />} label="Add spend" onClick={() => setShowAddSpendForm(true)} />
               <NavButton icon={<CloudDownload />} label="Download Report" onClick={() => setShowDownloadModal(true)} />
               <div className="hidden md:block">
