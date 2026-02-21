@@ -6,8 +6,9 @@ import {
   CloudDownload, 
   X 
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUserData } from "../utils/auth";
 
 // Auth utility mockups
 const getAccessToken = () => localStorage.getItem("access_token");
@@ -27,6 +28,23 @@ function UserNav() {
   const [showAddSpendForm, setShowAddSpendForm] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  
+    useEffect(() => {
+      const userData = getUserData();
+      if (userData) {
+        setProfile({
+          name: userData.name,
+          email: userData.email,
+          avatarUrl: userData.profile_pic,
+          memberSince: "Jun 2024",
+          lastLogin: "Feb 18, 2026",
+          plan: "Starter",
+          status: "Active",
+          location: "Delhi, IN",
+        });
+      }
+    }, []);
   
   const [formData, setFormData] = useState({
     category: "",
@@ -122,6 +140,10 @@ function UserNav() {
     navigate("/");
   };
 
+  if(!profile) {
+    return <div>Loading ...</div>
+  }
+
   return (
     <div className="pt-6 overflow-x-clip">
       <div className="px-5 sm:px-4 md:px-10">
@@ -138,7 +160,7 @@ function UserNav() {
           </div>
           <div className="mx-8 md:mx-0">
             <div className="flex gap-2 sm:gap-3 md:gap-5">
-              <NavButton icon={<UserIcon />} label="Profile" onClick={() => navigate("/profile")} />
+              <NavButton icon={profile.avatarUrl} label="Profile avatar" onClick={() => navigate("/profile")} />
               <NavButton icon={<Plus />} label="Add spend" onClick={() => setShowAddSpendForm(true)} />
               <NavButton icon={<CloudDownload />} label="Download Report" onClick={() => setShowDownloadModal(true)} />
               <div className="hidden md:block">
