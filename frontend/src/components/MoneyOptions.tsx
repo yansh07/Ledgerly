@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Trash2, Calendar, LayoutDashboard, CreditCard, TrendingUp } from 'lucide-react';
 
-// Authentication utility mock - since we cannot resolve local files in this environment
 const getAccessToken = () => {
     try {
         return localStorage.getItem("access_token");
