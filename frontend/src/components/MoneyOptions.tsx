@@ -29,7 +29,7 @@ interface Spend {
 
 export default function App() {
     const [spends, setSpends] = useState<Spend[]>([]);
-    const API_URL = `${getApiBaseUrl()}/expenses`;
+    const API_URL = `${getApiBaseUrl()}/expense`;
 
     const fetchExpenses = async () => {
         const token = getAccessToken();
