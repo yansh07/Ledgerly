@@ -1,6 +1,5 @@
 import { 
-  IndianRupee, 
-  User as UserIcon, 
+  IndianRupee,  
   LogOut, 
   Plus, 
   CloudDownload, 
