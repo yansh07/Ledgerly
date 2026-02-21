@@ -2,7 +2,7 @@ import {
   IndianRupee,  
   LogOut, 
   Plus, 
-  // CloudDownload, 
+  CloudDownload, 
   X 
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -25,7 +25,7 @@ const getApiBaseUrl = () => {
 function UserNav() {
   const navigate = useNavigate();
   const [showAddSpendForm, setShowAddSpendForm] = useState(false);
-  // const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   
@@ -71,30 +71,30 @@ function UserNav() {
     window.dispatchEvent(new Event("expenseAdded"));
   };
 
-  // const handleDownload = async (format: string) => {
-  //   const token = getAccessToken();
-  //   if (!token) return;
+  const handleDownload = async (format: string) => {
+    const token = getAccessToken();
+    if (!token) return;
 
-  //   try {
-  //     const response = await fetch(`${API_BASE_URL}/report/download?format=${format}`, {
-  //       headers: { 'Authorization': `Bearer ${token}` }
-  //     });
+    try {
+      const response = await fetch(`${API_BASE_URL}/report/download?format=${format}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       
-  //     if (response.ok) {
-  //       const blob = await response.blob();
-  //       const url = window.URL.createObjectURL(blob);
-  //       const a = document.createElement('a');
-  //       a.href = url;
-  //       a.download = `ledgerly_report_${new Date().getTime()}.${format}`;
-  //       document.body.appendChild(a);
-  //       a.click();
-  //       window.URL.revokeObjectURL(url);
-  //     }
-  //   } catch (error) {
-  //     console.error(`Failed to download ${format}`, error);
-  //   }
-  //   setShowDownloadModal(false);
-  // };
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ledgerly_report_${new Date().getTime()}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error(`Failed to download ${format}`, error);
+    }
+    setShowDownloadModal(false);
+  };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -161,7 +161,7 @@ function UserNav() {
             <div className="flex gap-2 sm:gap-3 md:gap-5">
               <img src={profile.avatarUrl} alt="Profile Avatar" className="object-cover rounded-full h-12 w-12 cursor-pointer" onClick={() => navigate("/profile")}/>
               <NavButton icon={<Plus />} label="Add spend" onClick={() => setShowAddSpendForm(true)} />
-              {/* <NavButton icon={<CloudDownload />} label="Download Report" onClick={() => setShowDownloadModal(true)} /> */}
+              <NavButton icon={<CloudDownload />} label="Download Report" onClick={() => setShowDownloadModal(true)} />
               <div className="hidden md:block">
                 <NavButton icon={<LogOut />} label="Logout" onClick={handleLogout} />
               </div>
@@ -172,7 +172,7 @@ function UserNav() {
       <div className="border-b border-gray-800 mt-6" />
 
       {/* Download Modal */}
-      {/* {showDownloadModal && (
+      {showDownloadModal && (
         <Modal title="Choose Format" onClose={() => setShowDownloadModal(false)}>
             <div className="flex flex-col gap-4">
               <button onClick={() => handleDownload('csv')} className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition duration-300">
@@ -183,7 +183,7 @@ function UserNav() {
               </button>
             </div>
         </Modal>
-      )} */}
+      )}
 
       {/* Add Spend Form Modal */}
       {showAddSpendForm && (
