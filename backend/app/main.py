@@ -1,16 +1,17 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
+from datetime import date
 from app.db import get_db
 from app.models import User, Expense
-from app.utils.auth_utils import create_access_token
+from app.utils.auth_utils import create_access_token, generate_csv_report, generate_pdf_report, get_current_user
+from fastapi.responses import StreamingResponse
+import io
 from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from datetime import date
-from app.utils.auth_utils import get_current_user
 
 load_dotenv()
 
@@ -99,16 +100,29 @@ async def get_expense(db: Session = Depends(get_db), user: User = Depends(get_cu
     expenses = db.query(Expense).filter(Expense.user_id == user.id).all()
     return expenses
 
-@app.delete("/expense/{expense_id}")
-async def delete_expense(
-    expense_id: int,
+@app.get("/report/download")
+async def download_report(
+    format: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    expense = db.query(Expense).filter(Expense.id == expense_id, Expense.user_id == user.id).first()
-    if not expense:
-        raise HTTPException(status_code=404, detail="Expense not found")
+    expenses = db.query(Expense).filter(Expense.user_id == user.id).all()
+
+    if format == "csv":
+        csv_data = generate_csv_report(expenses)
+        return StreamingResponse(
+            io.StringIO(csv_data),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=ledgerly_report.csv"}
+        )
     
-    db.delete(expense)
-    db.commit()
-    return {"status": "success", "message": "Expense deleted successfully"}
+    elif format == "pdf":
+        pdf_data = generate_pdf_report(expenses, user.name)
+        return StreamingResponse(
+            pdf_data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=ledgerly_report.pdf"}
+        )
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format specified")
